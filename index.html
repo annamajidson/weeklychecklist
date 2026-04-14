@@ -1,316 +1,629 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Workweek</title>
-<link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Mono:wght@300;400;500&display=swap" rel="stylesheet">
-<style>
-  :root {
-    --bg: #0f0e0c;
-    --border: #2e2d28;
-    --border2: #3a3930;
-    --text: #e8e4d8;
-    --muted: #7a7768;
-    --teal:   #4ecba3;
-    --purple: #a78bfa;
-    --blue:   #60a5fa;
-    --amber:  #f59e0b;
-    --coral:  #f97316;
-    --gray:   #6b7280;
-    --teal-bg:   rgba(78,203,163,0.08);
-    --purple-bg: rgba(167,139,250,0.08);
-    --blue-bg:   rgba(96,165,250,0.08);
-    --amber-bg:  rgba(245,158,11,0.08);
-    --coral-bg:  rgba(249,115,22,0.08);
-    --gray-bg:   rgba(107,114,128,0.06);
-  }
-  * { box-sizing: border-box; margin: 0; padding: 0; }
-  body {
-    background: var(--bg);
-    color: var(--text);
-    font-family: 'DM Mono', monospace;
-    font-size: 13px;
-    min-height: 100vh;
-    padding: 0 0 80px;
-  }
-  header {
-    padding: 48px 40px 32px;
-    border-bottom: 1px solid var(--border);
-    display: flex;
-    align-items: flex-end;
-    justify-content: space-between;
-    gap: 24px;
-    flex-wrap: wrap;
-  }
-  h1 { font-family: 'DM Serif Display', serif; font-size: 42px; font-weight: 400; line-height: 1; letter-spacing: -0.5px; }
-  h1 em { font-style: italic; color: var(--teal); }
-  .header-meta { display: flex; flex-direction: column; align-items: flex-end; gap: 6px; }
-  .week-label { font-size: 11px; color: var(--muted); letter-spacing: 0.1em; text-transform: uppercase; }
-  .progress-bar-wrap { width: 180px; height: 3px; background: var(--border2); border-radius: 2px; overflow: hidden; }
-  .progress-bar-fill { height: 100%; background: var(--teal); border-radius: 2px; transition: width 0.4s ease; }
-  .progress-label { font-size: 11px; color: var(--muted); }
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Jeff Magidson — Guitarist</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Inter:ital,wght@0,300;0,400;0,500;1,300&display=swap" rel="stylesheet">
+    <style>
+        *, *::before, *::after {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
 
-  .save-status { font-size: 11px; color: var(--muted); letter-spacing: 0.05em; min-height: 16px; transition: opacity 0.3s; }
-  .save-status.saving { color: var(--amber); }
-  .save-status.saved  { color: var(--teal); }
+        :root {
+            --bg: #0a0807;
+            --text: #f0e8dc;
+            --muted: #666;
+            --accent: #c49030;
+        }
 
-  .day-tabs {
-    display: flex; padding: 0 40px;
-    border-bottom: 1px solid var(--border);
-    overflow-x: auto; scrollbar-width: none;
-  }
-  .day-tabs::-webkit-scrollbar { display: none; }
-  .day-tab {
-    padding: 16px 20px 14px; cursor: pointer;
-    font-family: 'DM Mono', monospace; font-size: 12px; font-weight: 500;
-    color: var(--muted); letter-spacing: 0.05em; text-transform: uppercase;
-    border-bottom: 2px solid transparent; white-space: nowrap;
-    transition: color 0.15s, border-color 0.15s;
-    display: flex; align-items: center; gap: 8px; user-select: none;
-    background: none; border-top: none; border-left: none; border-right: none; outline: none;
-  }
-  .day-tab:hover { color: var(--text); }
-  .day-tab.active { color: var(--text); border-bottom-color: var(--teal); }
-  .day-tab .day-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--border2); transition: background 0.2s; }
-  .day-tab.complete .day-dot { background: var(--teal); }
-  .day-tab.partial  .day-dot { background: var(--amber); }
+        html { scroll-behavior: smooth; }
 
-  .day-view { display: none; padding: 32px 40px; }
-  .day-view.active { display: block; }
-  .day-header { display: flex; align-items: baseline; gap: 16px; margin-bottom: 28px; }
-  .day-name { font-family: 'DM Serif Display', serif; font-size: 28px; font-weight: 400; }
-  .day-progress { font-size: 11px; color: var(--muted); letter-spacing: 0.05em; }
-  .reset-day {
-    margin-left: auto; font-family: 'DM Mono', monospace; font-size: 11px; color: var(--muted);
-    background: none; border: 1px solid var(--border); padding: 4px 10px; border-radius: 4px;
-    cursor: pointer; letter-spacing: 0.05em; transition: color 0.15s, border-color 0.15s;
-  }
-  .reset-day:hover { color: var(--text); border-color: var(--border2); }
+        body {
+            background: var(--bg);
+            color: var(--text);
+            font-family: 'Inter', sans-serif;
+            font-weight: 300;
+            overflow-x: hidden;
+        }
 
-  .blocks { display: flex; flex-direction: column; gap: 6px; }
-  .block {
-    display: flex; align-items: center; gap: 14px;
-    padding: 14px 16px; border-radius: 8px; border: 1px solid transparent;
-    cursor: pointer; transition: opacity 0.2s; user-select: none;
-  }
-  .block:hover { filter: brightness(1.1); }
-  .block.done { opacity: 0.4; }
-  .block-check {
-    width: 18px; height: 18px; border-radius: 50%; border: 1.5px solid;
-    flex-shrink: 0; display: flex; align-items: center; justify-content: center;
-  }
-  .block.done .block-check::after {
-    content: ''; width: 8px; height: 5px;
-    border-left: 1.5px solid var(--bg); border-bottom: 1.5px solid var(--bg);
-    transform: rotate(-45deg) translateY(-1px); display: block;
-  }
-  .block-time  { font-size: 11px; color: var(--muted); min-width: 110px; letter-spacing: 0.03em; }
-  .block-label { flex: 1; font-size: 13px; }
-  .block-tag   { font-size: 10px; letter-spacing: 0.08em; text-transform: uppercase; padding: 2px 8px; border-radius: 20px; opacity: 0.7; }
+        /* ── NAV ─────────────────────────────────────────── */
+        nav {
+            position: fixed;
+            top: 0; left: 0; right: 0;
+            z-index: 100;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 28px 52px;
+        }
 
-  .block.teal   { background: var(--teal-bg);  border-color: rgba(78,203,163,0.15); }
-  .block.purple { background: var(--purple-bg); border-color: rgba(167,139,250,0.15); }
-  .block.blue   { background: var(--blue-bg);   border-color: rgba(96,165,250,0.15); }
-  .block.amber  { background: var(--amber-bg);  border-color: rgba(245,158,11,0.15); }
-  .block.coral  { background: var(--coral-bg);  border-color: rgba(249,115,22,0.15); }
-  .block.gray   { background: var(--gray-bg);   border-color: rgba(107,114,128,0.1); }
+        .nav-name {
+            font-family: 'Bebas Neue', sans-serif;
+            font-size: 1rem;
+            letter-spacing: 0.18em;
+            color: var(--text);
+            text-decoration: none;
+            opacity: 0.9;
+        }
 
-  .block.teal   .block-check { border-color: var(--teal); }
-  .block.purple .block-check { border-color: var(--purple); }
-  .block.blue   .block-check { border-color: var(--blue); }
-  .block.amber  .block-check { border-color: var(--amber); }
-  .block.coral  .block-check { border-color: var(--coral); }
-  .block.gray   .block-check { border-color: var(--gray); }
+        .nav-links {
+            display: flex;
+            gap: 36px;
+            align-items: center;
+        }
 
-  .block.teal.done   .block-check { background: var(--teal); }
-  .block.purple.done .block-check { background: var(--purple); }
-  .block.blue.done   .block-check { background: var(--blue); }
-  .block.amber.done  .block-check { background: var(--amber); }
-  .block.coral.done  .block-check { background: var(--coral); }
-  .block.gray.done   .block-check { background: var(--gray); }
+        .nav-links a {
+            color: var(--text);
+            text-decoration: none;
+            font-size: 0.7rem;
+            letter-spacing: 0.15em;
+            text-transform: uppercase;
+            opacity: 0.6;
+            transition: opacity 0.3s;
+        }
 
-  .block.teal   .block-tag { background: rgba(78,203,163,0.12);  color: var(--teal); }
-  .block.purple .block-tag { background: rgba(167,139,250,0.12); color: var(--purple); }
-  .block.blue   .block-tag { background: rgba(96,165,250,0.12);  color: var(--blue); }
-  .block.amber  .block-tag { background: rgba(245,158,11,0.12);  color: var(--amber); }
-  .block.coral  .block-tag { background: rgba(249,115,22,0.12);  color: var(--coral); }
-  .block.gray   .block-tag { background: rgba(107,114,128,0.1);  color: var(--gray); }
+        .nav-links a:hover { opacity: 1; }
 
-  .done-banner {
-    display: none; margin-top: 24px; padding: 16px 20px; border-radius: 8px;
-    border: 1px solid rgba(78,203,163,0.3); background: rgba(78,203,163,0.06);
-    color: var(--teal); font-size: 13px; letter-spacing: 0.04em; text-align: center;
-  }
-  .done-banner.visible { display: block; }
+        /* ── HERO ────────────────────────────────────────── */
+        .hero {
+            position: relative;
+            height: 100vh;
+            min-height: 640px;
+            overflow: hidden;
+            display: flex;
+            align-items: flex-end;
+        }
 
-  .loading { padding: 60px 40px; color: var(--muted); font-size: 12px; letter-spacing: 0.08em; }
+        .hero-bg {
+            position: absolute;
+            inset: 0;
+            background: url('Jeff Jazz Hall 1.jpg') center center / cover no-repeat;
+            transform: scale(1.06);
+            transition: transform 1.8s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+            filter: grayscale(15%);
+        }
 
-  @media (max-width: 600px) {
-    header { padding: 32px 20px 24px; }
-    h1 { font-size: 30px; }
-    .day-tabs, .day-view { padding-left: 20px; padding-right: 20px; }
-    .block-time { min-width: 80px; }
-  }
-</style>
+        .hero-bg.loaded { transform: scale(1); }
+
+        .hero-overlay {
+            position: absolute;
+            inset: 0;
+            background: linear-gradient(
+                160deg,
+                rgba(10, 8, 7, 0.15) 0%,
+                rgba(10, 8, 7, 0.05) 30%,
+                rgba(10, 8, 7, 0.60) 72%,
+                rgba(10, 8, 7, 0.97) 100%
+            );
+        }
+
+        .hero-content {
+            position: relative;
+            z-index: 2;
+            padding: 0 52px 68px;
+            width: 100%;
+        }
+
+        .hero-eyebrow {
+            font-size: 0.7rem;
+            letter-spacing: 0.28em;
+            text-transform: uppercase;
+            color: var(--accent);
+            margin-bottom: 14px;
+            opacity: 0;
+            animation: fadeUp 1s 0.4s forwards;
+        }
+
+        .hero-title {
+            font-family: 'Bebas Neue', sans-serif;
+            font-size: clamp(72px, 11vw, 148px);
+            line-height: 0.88;
+            letter-spacing: 0.025em;
+            color: var(--text);
+            opacity: 0;
+            animation: fadeUp 1s 0.65s forwards;
+        }
+
+        .hero-scroll {
+            position: absolute;
+            bottom: 36px;
+            right: 52px;
+            z-index: 2;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 10px;
+            font-size: 0.6rem;
+            letter-spacing: 0.18em;
+            text-transform: uppercase;
+            color: var(--muted);
+            opacity: 0;
+            animation: fadeIn 1s 1.5s forwards;
+        }
+
+        .hero-scroll::after {
+            content: '';
+            display: block;
+            width: 1px;
+            height: 44px;
+            background: var(--muted);
+            animation: pulse 1.8s ease-in-out infinite;
+        }
+
+        @keyframes pulse   { 0%,100%{opacity:.25} 50%{opacity:.8} }
+        @keyframes fadeUp  { from{opacity:0;transform:translateY(30px)} to{opacity:1;transform:translateY(0)} }
+        @keyframes fadeIn  { from{opacity:0} to{opacity:1} }
+
+        /* ── ABOUT ───────────────────────────────────────── */
+        .about {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            min-height: 88vh;
+        }
+
+        .about-image {
+            overflow: hidden;
+            position: relative;
+        }
+
+        .about-image img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            display: block;
+            transition: transform 0.9s ease;
+        }
+
+        .about-image:hover img { transform: scale(1.04); }
+
+        .about-text {
+            padding: 96px 72px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+        }
+
+        .section-label {
+            font-size: 0.65rem;
+            letter-spacing: 0.28em;
+            text-transform: uppercase;
+            color: var(--accent);
+            margin-bottom: 28px;
+        }
+
+        .section-heading {
+            font-family: 'Bebas Neue', sans-serif;
+            font-size: clamp(38px, 4.5vw, 62px);
+            line-height: 0.95;
+            letter-spacing: 0.025em;
+            margin-bottom: 40px;
+        }
+
+        .bio p {
+            font-size: 0.9rem;
+            line-height: 1.9;
+            color: rgba(240, 232, 220, 0.72);
+            margin-bottom: 22px;
+        }
+
+        .bio p:last-child { margin-bottom: 0; }
+
+        /* ── GALLERY ─────────────────────────────────────── */
+        .gallery {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 3px;
+        }
+
+        .gallery-item {
+            overflow: hidden;
+            aspect-ratio: 16 / 10;
+        }
+
+        .gallery-item img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            display: block;
+            filter: brightness(0.88);
+            transition: transform 0.7s ease, filter 0.5s ease;
+        }
+
+        .gallery-item:hover img {
+            transform: scale(1.04);
+            filter: brightness(1);
+        }
+
+        /* ── PLAYLIST ────────────────────────────────────── */
+        .playlist {
+            padding: 100px 52px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            background: #080605;
+        }
+
+        .playlist iframe {
+            width: 100%;
+            max-width: 660px;
+            border-radius: 12px;
+            box-shadow: 0 24px 64px rgba(0, 0, 0, 0.5);
+        }
+
+        /* ── BOOKS ───────────────────────────────────────── */
+        .books {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            min-height: 70vh;
+        }
+
+        .books-text {
+            padding: 96px 72px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+        }
+
+        .books-image {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 64px 56px;
+            background: #0f0c09;
+        }
+
+        .books-image img {
+            max-height: 520px;
+            max-width: 100%;
+            object-fit: contain;
+            display: block;
+            box-shadow: 0 24px 64px rgba(0,0,0,0.6);
+            transition: transform 0.6s ease;
+        }
+
+        .books-image img:hover { transform: translateY(-6px); }
+
+        .book-subtitle {
+            font-size: 0.82rem;
+            line-height: 1.8;
+            color: rgba(240, 232, 220, 0.65);
+            margin-bottom: 36px;
+        }
+
+        .book-btn {
+            display: inline-block;
+            align-self: flex-start;
+            padding: 14px 40px;
+            border: 1px solid rgba(240, 232, 220, 0.35);
+            color: var(--text);
+            text-decoration: none;
+            font-size: 0.72rem;
+            letter-spacing: 0.2em;
+            text-transform: uppercase;
+            transition: background 0.3s, border-color 0.3s, color 0.3s;
+        }
+
+        .book-btn:hover {
+            background: var(--text);
+            border-color: var(--text);
+            color: var(--bg);
+        }
+
+        /* ── MUSIC ───────────────────────────────────────── */
+        .music {
+            padding: 120px 52px;
+            text-align: center;
+            background: #080605;
+        }
+
+        .video-wrap {
+            margin: 56px auto 0;
+            max-width: 800px;
+            position: relative;
+            display: block;
+            border-radius: 4px;
+            overflow: hidden;
+            cursor: pointer;
+        }
+
+        .video-wrap img {
+            width: 100%;
+            display: block;
+        }
+
+        .video-play {
+            position: absolute;
+            inset: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: rgba(0,0,0,0.25);
+            transition: background 0.2s;
+        }
+
+        .video-wrap:hover .video-play { background: rgba(0,0,0,0.45); }
+
+        .video-play svg {
+            width: 72px;
+            height: 72px;
+            filter: drop-shadow(0 2px 8px rgba(0,0,0,0.5));
+        }
+
+        .groups {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 16px 48px;
+            margin-top: 52px;
+        }
+
+        .group-item {
+            font-family: 'Bebas Neue', sans-serif;
+            font-size: clamp(22px, 2.8vw, 36px);
+            letter-spacing: 0.08em;
+            color: var(--text);
+            opacity: 0.75;
+            text-decoration: none;
+            transition: opacity 0.2s;
+        }
+
+        a.group-item:hover { opacity: 1; }
+
+        .group-item:not(:last-child)::after {
+            content: '·';
+            margin-left: 48px;
+            opacity: 0.3;
+        }
+
+        /* ── CONTACT ─────────────────────────────────────── */
+        .contact {
+            padding: 136px 52px;
+            text-align: center;
+        }
+
+        .contact-heading {
+            font-family: 'Bebas Neue', sans-serif;
+            font-size: clamp(48px, 7vw, 100px);
+            letter-spacing: 0.03em;
+            line-height: 1;
+            margin-bottom: 56px;
+        }
+
+        .contact-btn {
+            display: inline-block;
+            padding: 18px 56px;
+            border: 1px solid rgba(240, 232, 220, 0.38);
+            color: var(--text);
+            text-decoration: none;
+            font-size: 0.75rem;
+            letter-spacing: 0.22em;
+            text-transform: uppercase;
+            transition: background 0.3s, border-color 0.3s, color 0.3s;
+        }
+
+        .contact-btn:hover {
+            background: var(--text);
+            border-color: var(--text);
+            color: var(--bg);
+        }
+
+        /* ── PORTRAIT ────────────────────────────────────── */
+        .portrait-feature {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 80px 52px;
+            background: var(--bg);
+        }
+
+        .portrait-feature img {
+            display: block;
+            height: 85vh;
+            width: auto;
+            max-width: 100%;
+            box-shadow: 0 32px 80px rgba(0, 0, 0, 0.5);
+        }
+
+        /* ── FOOTER ──────────────────────────────────────── */
+        footer {
+            padding: 36px 52px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-top: 1px solid rgba(255,255,255,0.07);
+        }
+
+        footer p {
+            font-size: 0.68rem;
+            color: var(--muted);
+            letter-spacing: 0.06em;
+        }
+
+        footer a {
+            font-size: 0.68rem;
+            color: var(--muted);
+            text-decoration: none;
+            letter-spacing: 0.12em;
+            text-transform: uppercase;
+            transition: color 0.3s;
+        }
+
+        footer a:hover { color: var(--text); }
+
+        /* ── SCROLL REVEAL ───────────────────────────────── */
+        .reveal {
+            opacity: 0;
+            transform: translateY(36px);
+            transition: opacity 0.9s ease, transform 0.9s ease;
+        }
+
+        .reveal.d1 { transition-delay: 0.15s; }
+        .reveal.d2 { transition-delay: 0.30s; }
+
+        .reveal.visible {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        /* ── RESPONSIVE ──────────────────────────────────── */
+        @media (max-width: 900px) {
+            nav { padding: 24px 28px; }
+            .hero-content { padding: 0 28px 52px; }
+            .hero-scroll { display: none; }
+
+            .about, .books { grid-template-columns: 1fr; }
+            .about-image { min-height: 56vw; }
+            .about-text, .books-text { padding: 56px 28px; }
+            .books-image { padding: 48px 28px; }
+            .books { display: flex; flex-direction: column-reverse; }
+
+            .music, .contact { padding: 80px 28px; }
+            .groups { gap: 12px 24px; }
+            .group-item::after { display: none; }
+
+            footer { padding: 28px; flex-direction: column; gap: 14px; text-align: center; }
+        }
+
+        @media (max-width: 540px) {
+            .nav-links a:not(:last-child) { display: none; }
+        }
+    </style>
 </head>
 <body>
 
-<header>
-  <h1>Work<em>week</em></h1>
-  <div class="header-meta">
-    <span class="week-label">Weekly progress</span>
-    <div class="progress-bar-wrap">
-      <div class="progress-bar-fill" id="total-bar" style="width:0%"></div>
+    <!-- NAV -->
+    <nav>
+        <a href="#" class="nav-name">JEFF MAGIDSON</a>
+        <div class="nav-links">
+            <a href="#about">About</a>
+            <a href="#books">Books</a>
+            <a href="#music">Music</a>
+            <a href="#contact">Contact</a>
+        </div>
+    </nav>
+
+    <!-- HERO -->
+    <section class="hero">
+        <div class="hero-bg" id="heroBg"></div>
+        <div class="hero-overlay"></div>
+        <div class="hero-content">
+            <p class="hero-eyebrow">Guitarist &nbsp;·&nbsp; Performer &nbsp;·&nbsp; Teacher</p>
+            <h1 class="hero-title">JEFF<br>MAGIDSON</h1>
+        </div>
+        <div class="hero-scroll">Scroll</div>
+    </section>
+
+    <!-- ABOUT -->
+    <section class="about" id="about">
+        <div class="about-image reveal">
+            <img src="Duo Gadjo Promo 2.jpg" alt="Jeff Magidson performing">
+        </div>
+        <div class="about-text">
+            <p class="section-label reveal">About</p>
+            <h2 class="section-heading reveal d1">A LIFE<br>IN MUSIC</h2>
+            <div class="bio reveal d2">
+                <p>A San Francisco native, Jeff Magidson was born into a family of musicians and began his musical journey on piano and drums before choosing the guitar as his primary instrument. At a young age, he developed his craft performing in local clubs.</p>
+                <p>In 1983, he spent a year in France, where he was invited to play with blues and jazz bands across Europe. He eventually settled in France and gained recognition with the group Sweet Mama. A specialist in slide and bottleneck guitar and Dobro, his style reflects influences from Muddy Waters, Roy Rogers, Ry Cooder, and Johnny Winter.</p>
+                <p>After performing as a one-man band and opening for artists such as Calvin Russell and Joe Louis Walker, he founded the band John Doe in 1994, recording three well-received blues-funk albums and appearing on FIP, France Inter, and RTL.</p>
+                <p>After returning to San Francisco, he joined the Hot Club of San Francisco and became director of a West Coast music school. He continues to perform with Duo Gadjo, The Mighty Mules, and Jeff Magidson & Robinson Street Trio.</p>
+            </div>
+        </div>
+    </section>
+
+    <!-- GALLERY -->
+    <section class="gallery">
+        <div class="gallery-item reveal">
+            <img src="Mighty Mules Richmond_2022_05_06_0067.jpg" alt="The Mighty Mules">
+        </div>
+        <div class="gallery-item reveal d1">
+            <img src="Marnaz Band.JPG" alt="Jeff Magidson live">
+        </div>
+    </section>
+
+    <!-- PLAYLIST -->
+    <div class="playlist">
+        <p class="section-label reveal" style="margin-bottom: 40px;">Listen</p>
+        <iframe
+            allow="autoplay *; encrypted-media *;"
+            frameborder="0"
+            height="450"
+            sandbox="allow-forms allow-popups allow-same-origin allow-scripts allow-storage-access-by-user-activation allow-top-navigation-by-user-activation"
+            src="https://embed.music.apple.com/fr/playlist/jeff-discography/pl.u-xlyNjl2I92DYoN?l=en">
+        </iframe>
     </div>
-    <span class="progress-label" id="total-label">0 / 0 blocks</span>
-    <span class="save-status" id="save-status"></span>
-  </div>
-</header>
 
-<nav class="day-tabs" id="day-tabs"></nav>
-<main id="main"><div class="loading">Loading your schedule...</div></main>
+    <!-- BOOKS -->
+    <section class="books" id="books">
+        <div class="books-text">
+            <p class="section-label reveal">Books</p>
+            <h2 class="section-heading reveal d1">GYPSY JAZZ<br>GUITAR</h2>
+            <p class="book-subtitle reveal d2">Published by Hal Leonard as part of the Guitar Method series, edited by Dave Rubin. A comprehensive guide to the style of Django Reinhardt — covering technique, repertoire, and the art of improvisation in the manouche tradition.</p>
+            <a href="https://www.halleonard.com" target="_blank" rel="noopener" class="book-btn reveal d2">Find the Book</a>
+        </div>
+        <div class="books-image reveal">
+            <img src="Gypsy jazz Book.jpg" alt="Gypsy Jazz Guitar — Hal Leonard">
+        </div>
+    </section>
 
-<script>
-const ALL_DAYS = ['Monday','Tuesday','Wednesday','Thursday','Friday'];
+    <!-- MUSIC -->
+    <section class="music" id="music">
+        <p class="section-label reveal">Music</p>
+        <h2 class="section-heading reveal d1">IN PERFORMANCE</h2>
+        <div class="groups reveal d2">
+            <a class="group-item" href="https://www.duogadjo.com/" target="_blank" rel="noopener">Duo Gadjo</a>
+            <a class="group-item" href="https://www.youtube.com/watch?v=wIjNY7_PQrw&list=RDwIjNY7_PQrw&start_radio=1" target="_blank" rel="noopener">The Mighty Mules</a>
+            <a class="group-item" href="https://www.youtube.com/watch?v=vMZnDETJaxM" target="_blank" rel="noopener">Robinson Street Trio</a>
+        </div>
+        <a class="video-wrap reveal d3" href="https://www.youtube.com/watch?v=YDvWxHCLeas&t=15s" target="_blank" rel="noopener">
+            <img src="https://img.youtube.com/vi/YDvWxHCLeas/maxresdefault.jpg" alt="Jeff Magidson in performance">
+            <div class="video-play">
+                <svg viewBox="0 0 80 80" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <circle cx="40" cy="40" r="40" fill="rgba(255,255,255,0.9)"/>
+                    <polygon points="32,24 60,40 32,56" fill="#111"/>
+                </svg>
+            </div>
+        </a>
+    </section>
 
-function makeBlocks(day) {
-  const coding   = ['Monday','Wednesday','Thursday'].includes(day);
-  const flexLode = ['Monday','Wednesday','Friday'].includes(day);
-  const adminEnd  = coding ? '5:00 – 5:30' : '4:30 – 5:00';
-  const prac2Time = coding ? '5:30 – 6:00' : '5:00 – 5:30';
-  const evenTime  = coding ? '6:00 – 8:30' : '5:30 – 8:30';
+    <!-- CONTACT -->
+    <section class="contact" id="contact">
+        <p class="section-label reveal">Contact</p>
+        <h2 class="contact-heading reveal d1">GET IN<br>TOUCH</h2>
+        <a href="mailto:jmagmusic1@gmail.com" class="contact-btn reveal d2">jmagmusic1@gmail.com</a>
+    </section>
 
-  return [
-    { id:'journal',   time:'7:00 – 8:00',   label:'Morning pages / journaling',       color:'teal',   tag:'ritual' },
-    { id:'workout',   time:'8:00 – 9:00',   label:'Morning workout',                  color:'teal',   tag:'ritual' },
-    { id:'shower',    time:'9:00 – 9:30',   label:'Breakfast + shower',               color:'teal',   tag:'ritual' },
-    { id:'practice1', time:'9:30 – 10:00',  label:'Instrument practice — block 1',    color:'purple', tag:'practice' },
-    { id:'lode',      time:'10:00 – 12:30', label:'Deep composing — Lode',            color:'blue',   tag:'composing' },
-    { id:'lunch',     time:'12:30 – 1:30',  label:'Lunch break',                      color:'gray',   tag:'break' },
-    { id:'jazz',      time:'1:30 – 2:30',   label:'Deep composing — The jazz album',  color:'blue',   tag:'composing' },
-    { id:'flex',      time:'2:30 – 4:00',   label: flexLode
-        ? 'Deep composing — Lode (flex)'
-        : 'Deep composing — Jazz album (flex)',                                         color:'blue',   tag:'composing' },
-    ...(coding ? [{ id:'coding', time:'4:00 – 5:00', label:'Coding project',          color:'coral',  tag:'coding' }] : []),
-    { id:'admin2',    time: adminEnd,        label:'Admin / email check-in',           color:'amber',  tag:'admin' },
-    { id:'practice2', time: prac2Time,       label:'Instrument practice — block 2',    color:'purple', tag:'practice' },
-    { id:'evening',   time: evenTime,        label:'Evening — personal time',          color:'gray',   tag:'break' },
-    { id:'winddown',  time:'8:30 – 10:00',  label:'Wind down',                        color:'gray',   tag:'break' },
-  ];
-}
+    <!-- PORTRAIT -->
+    <div class="portrait-feature">
+        <img src="Jeff Vertical 1.jpg" alt="Jeff Magidson">
+    </div>
 
-// ── Storage ──────────────────────────────────────────────────────────────────
-// Uses window.storage (Claude artifact persistent API) with an in-memory
-// fallback so the app always works even if storage is unavailable.
+    <!-- FOOTER -->
+    <footer>
+        <p>© 2026 Jeff Magidson</p>
+    </footer>
 
-const STORE_KEY = 'routine_v4';
-let state = {};
-let storageAvailable = false;
+    <script>
+        // Hero zoom-out on load
+        window.addEventListener('load', () => {
+            document.getElementById('heroBg').classList.add('loaded');
+        });
 
-async function loadState() {
-  try {
-    const result = await window.storage.get(STORE_KEY);
-    if (result && result.value) {
-      state = JSON.parse(result.value);
-    }
-    storageAvailable = true;
-  } catch (e) {
-    // storage not available — run in-memory only
-    storageAvailable = false;
-  }
-}
+        // Scroll reveal
+        const observer = new IntersectionObserver(entries => {
+            entries.forEach(e => {
+                if (e.isIntersecting) {
+                    e.target.classList.add('visible');
+                    observer.unobserve(e.target);
+                }
+            });
+        }, { threshold: 0.08, rootMargin: '0px 0px -40px 0px' });
 
-let saveTimer = null;
-function schedulesSave() {
-  clearTimeout(saveTimer);
-  showStatus('saving');
-  saveTimer = setTimeout(async () => {
-    if (!storageAvailable) { showStatus(''); return; }
-    try {
-      await window.storage.set(STORE_KEY, JSON.stringify(state));
-      showStatus('saved');
-      setTimeout(() => showStatus(''), 2000);
-    } catch(e) {
-      showStatus('');
-    }
-  }, 400);
-}
-
-function showStatus(s) {
-  const el = document.getElementById('save-status');
-  if (!el) return;
-  el.className = 'save-status' + (s ? ' ' + s : '');
-  el.textContent = s === 'saving' ? 'saving...' : s === 'saved' ? '✓ saved' : '';
-}
-
-// ── State helpers ─────────────────────────────────────────────────────────────
-function key(day, id) { return `${day}__${id}`; }
-function isChecked(day, id) { return !!state[key(day, id)]; }
-
-function toggleBlock(day, id) {
-  state[key(day, id)] = !state[key(day, id)];
-  schedulesSave();
-  render();
-}
-
-function resetDay(day) {
-  makeBlocks(day).forEach(b => delete state[key(day, b.id)]);
-  schedulesSave();
-  render();
-}
-
-// ── UI ────────────────────────────────────────────────────────────────────────
-let activeDay = ALL_DAYS[0];
-function setDay(day) { activeDay = day; render(); }
-
-function render() {
-  document.getElementById('day-tabs').innerHTML = ALL_DAYS.map(day => {
-    const blocks = makeBlocks(day);
-    const done = blocks.filter(b => isChecked(day, b.id)).length;
-    const cls = done === blocks.length ? 'complete' : done > 0 ? 'partial' : '';
-    return `<button class="day-tab ${cls} ${day === activeDay ? 'active' : ''}" onclick="setDay('${day}')">
-      <span class="day-dot"></span>${day.slice(0,3)}
-    </button>`;
-  }).join('');
-
-  document.getElementById('main').innerHTML = ALL_DAYS.map(day => {
-    const blocks = makeBlocks(day);
-    const done = blocks.filter(b => isChecked(day, b.id)).length;
-    const allDone = done === blocks.length;
-    return `<div class="day-view ${day === activeDay ? 'active' : ''}">
-      <div class="day-header">
-        <span class="day-name">${day}</span>
-        <span class="day-progress">${done} / ${blocks.length} complete</span>
-        <button class="reset-day" onclick="resetDay('${day}')">reset</button>
-      </div>
-      <div class="blocks">
-        ${blocks.map(b => `
-          <div class="block ${b.color} ${isChecked(day, b.id) ? 'done' : ''}"
-               onclick="toggleBlock('${day}','${b.id}')">
-            <div class="block-check"></div>
-            <span class="block-time">${b.time}</span>
-            <span class="block-label">${b.label}</span>
-            <span class="block-tag">${b.tag}</span>
-          </div>`).join('')}
-      </div>
-      <div class="done-banner ${allDone ? 'visible' : ''}">✦ &nbsp; ${day} complete — good work.</div>
-    </div>`;
-  }).join('');
-
-  let totalDone = 0, totalAll = 0;
-  ALL_DAYS.forEach(day => {
-    const blocks = makeBlocks(day);
-    totalDone += blocks.filter(b => isChecked(day, b.id)).length;
-    totalAll  += blocks.length;
-  });
-  const pct = totalAll ? Math.round(totalDone / totalAll * 100) : 0;
-  document.getElementById('total-bar').style.width = pct + '%';
-  document.getElementById('total-label').textContent = `${totalDone} / ${totalAll} blocks`;
-}
-
-// ── Boot ──────────────────────────────────────────────────────────────────────
-loadState().then(() => render());
-</script>
+        document.querySelectorAll('.reveal').forEach(el => observer.observe(el));
+    </script>
 </body>
 </html>
